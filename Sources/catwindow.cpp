@@ -56,6 +56,7 @@ void CatWindow::kindergartenSettings() {
 void CatWindow::showEvent(QShowEvent *event) {
     // cout << this->x() << this->y() << endl;
     cat->move(cat->positionModify(this->pos()));
+    cat->gartenPos = cat->positionModify(this->pos());
     cat->show();
 }
 
@@ -65,7 +66,9 @@ void CatWindow::hideEvent(QHideEvent *event) {
 
 void CatWindow::mouseMoveEvent(QMouseEvent *event)
 {
-    this->move(event->globalPos() - this->dPos);
+    QPoint pos = event->globalPos() - this->dPos;
+    this->move(pos);
+    cat->gartenPos = cat->positionModify(pos);
     return QWidget::mouseMoveEvent(event);
 }
 
@@ -80,7 +83,7 @@ void CatWindow::mousePressEvent(QMouseEvent *event)
 
 void CatWindow::mouseReleaseEvent(QMouseEvent *event) {
     QPoint nowPos = this->pos();
-    if(nowPos != tempPos){
+    if(nowPos != tempPos && cat->mode == sleep){
         TaskCat* moveTask = new TaskCat(QString("move"));
         moveTask->pos = cat->positionModify(nowPos);
         this->cat->taskDeal(moveTask);

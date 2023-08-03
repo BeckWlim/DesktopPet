@@ -17,15 +17,24 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class KitcoonWindow; }
 QT_END_NAMESPACE
 
+enum CatMode{
+    sleep,
+    play,
+    hungry
+};
+
 class KitcoonWindow : public QWidget {
 Q_OBJECT
 
 public:
+    QPoint gartenPos;
+    CatMode mode=sleep;
     explicit KitcoonWindow(QWidget *parent = nullptr);
     ~KitcoonWindow() override;
 
     void taskDeal(TaskCat *task);
     QPoint positionModify(QPoint pos);
+    void modeSwitcher(CatMode mode);
 
 private:
     Ui::KitcoonWindow *ui;
@@ -36,12 +45,14 @@ private:
     QPropertyAnimation* animation;
     QString direction;
     vector<TaskCat*> taskStack;
+    QTimer* moveTimer, *eventTimer;
 signals:
     void addTask();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event);
 
 private slots:
     void taskFinish();

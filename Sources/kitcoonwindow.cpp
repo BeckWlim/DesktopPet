@@ -10,6 +10,10 @@
 #include <QMouseEvent>
 #include <cmath>
 #include <iostream>
+#include <QTimer>
+#include <QtGlobal>
+#include <QTime>
+#include <QDesktopWidget>
 
 using namespace std;
 
@@ -24,6 +28,25 @@ KitcoonWindow::KitcoonWindow(QWidget *parent) :
     ui->label->setMovie(cat);
     TaskCat* sleep = new TaskCat(QString("sleep"), QString("sleep_pre"), QString("sleep_pst"));
     taskDeal(sleep);
+    animation = new QPropertyAnimation(this, "pos");
+    moveTimer = new QTimer();
+    eventTimer = new QTimer();
+    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+    connect(moveTimer, &QTimer::timeout, this, [=](){
+        int interval = (qrand() % 10 + 5)* 1000;
+        moveTimer->setInterval(interval);
+        QRect screenRect = QApplication::desktop()->screenGeometry();
+        int w = 1462;
+        int h = 822;
+        cout << w << h << endl;
+        int threshold = 200;
+        int a = (qrand() % (h - threshold));
+        int b = (qrand() % (w - threshold));
+        // cout << "a" << a << "b"<< b <<"interval"<< interval << endl;
+        TaskCat* task = new TaskCat("move");
+        task->pos = QPoint(a, b);
+        taskDeal(task);
+    });
 }
 
 void KitcoonWindow::taskDeal(TaskCat* task) {
@@ -36,7 +59,7 @@ void KitcoonWindow::taskDeal(TaskCat* task) {
     if(temp->task == task->task){
         taskStack.pop_back();
     }
-    cout << temp->task.toStdString() << endl;
+    // cout << temp->task.toStdString() << endl;
     this->taskStack.push_back(task); // 载入需要执行的任务
 
     if(temp->pst != QString::null){ // 任务中断动画非空 载入中断动画
@@ -56,6 +79,7 @@ void KitcoonWindow::taskFinish() {
     if(temp->pre != QString::null && temp->pre != top->task){
         taskStack.push_back(new TaskCat(temp->pre));
     }
+    delete top;
     createTaskThread();
 }
 
@@ -66,6 +90,10 @@ void KitcoonWindow::createTaskThread() {
         animation = new QPropertyAnimation(this, "pos");
         QPoint currentPos = this->pos() - task->pos;
         double distance = sqrt(currentPos.x() * currentPos.x() + currentPos.y()*currentPos.y());
+        if(distance < 10){
+            taskFinish();
+            return;
+        }
         double theta = asin(currentPos.y() / sqrt(currentPos.x()*currentPos.x() + currentPos.y()*currentPos.y()));
         if(abs(theta) > 0.7854 && currentPos.y()>0){
             this->direction = "up";
@@ -87,7 +115,7 @@ void KitcoonWindow::createTaskThread() {
         this->cat->setFileName(actionStr);
         this->cat->start();
         animation->start();
-        connect(animation, &QPropertyAnimation::finished, this, &KitcoonWindow::taskFinish);
+        connect(animation, &QPropertyAnimation::finished, this, &KitcoonWindow::taskFinish,Qt::UniqueConnection);
         cat->disconnect(this);
     }
     else{
@@ -100,6 +128,33 @@ void KitcoonWindow::createTaskThread() {
                 taskFinish();
             }
         }); // 动画播放完毕后进行任务终止操作
+    }
+}
+
+void KitcoonWindow::modeSwitcher(CatMode mode) {
+    if(mode == play){
+        taskStack.erase(taskStack.begin(), taskStack.end());
+        TaskCat* idle = new TaskCat(QString("idle"));
+        TaskCat* jump = new TaskCat(QString("jump"));
+        taskStack.push_back(idle);
+        taskStack.push_back(jump);
+        if(animation != nullptr){
+            animation->stop();
+        }
+        moveTimer->setInterval((qrand() % 10 + 5)* 1000);
+        moveTimer->start();
+        createTaskThread();
+    }
+    if(mode == sleep){
+        moveTimer->stop();
+        TaskCat* temp = taskStack.back();
+        taskStack.erase(taskStack.begin(), taskStack.end());
+        TaskCat* sleep = new TaskCat("sleep", "sleep_pre", "sleep_pst");
+        TaskCat* move = new TaskCat("move");
+        move->pos = this->gartenPos;
+        taskStack.push_back(sleep);
+        taskStack.push_back(move);
+        createTaskThread();
     }
 }
 
@@ -127,3 +182,12 @@ KitcoonWindow::~KitcoonWindow() {
     delete ui;
 }
 
+void KitcoonWindow::mouseDoubleClickEvent(QMouseEvent *event) {
+    if(mode == sleep){
+        mode = play;
+    }
+    else if(mode == play){
+        mode = sleep;
+    }
+    modeSwitcher(mode);
+}

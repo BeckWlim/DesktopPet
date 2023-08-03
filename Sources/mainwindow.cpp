@@ -22,7 +22,6 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
     this->setContextMenuPolicy(Qt::CustomContextMenu); // 设置菜单策略
     connect(this, &MainWindow::customContextMenuRequested, this, &MainWindow::_SlotPlayArgsMenu);
-    // setWindowOpacity(0.7); //设置窗体透明度
     setWindowIcon(QIcon(":/image/icon.png"));
     ui->setupUi(this);
     dialogWindow = new DialogWindow();
@@ -55,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
     this->setAttribute(Qt::WA_TranslucentBackground);//设置窗体全透明
     movie = new QMovie(":/image/wendy_idle.gif");
+    movie->setScaledSize(QSize(182, 201));
     movie->setSpeed(400);
     ui->label->setMovie(movie);
     movie->start();
