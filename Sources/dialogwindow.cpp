@@ -15,6 +15,7 @@
 #include <QJsonParseError>
 #include "QNChatMessage.h"
 #include <QtNetwork/QNetworkReply>
+#include <QKeyEvent>
 
 DialogWindow::DialogWindow(QWidget *parent) :
         QWidget(parent), ui(new Ui::DialogWindow)
@@ -26,6 +27,27 @@ DialogWindow::DialogWindow(QWidget *parent) :
     robotAPIManager = new QNetworkAccessManager();
     connect(robotAPIManager, &QNetworkAccessManager::finished, this, &DialogWindow::dealRobotMessage);
     connect(this, &DialogWindow::robotReply, this, &DialogWindow::displayReply);
+    ui->buttonSend->setFocus();
+    ui->buttonSend->setDefault(true);
+    ui->textEdit->installEventFilter(this);
+    QFont font = QFont("Microsoft YaHei",12,2);
+    ui->textEdit->setFont(font);
+}
+
+void DialogWindow::setStyle(QString str) {
+    QFile file(str);
+    if(file.open(QFile::ReadOnly))
+    {
+        QTextStream filetext(&file);
+        QString stylesheet = filetext.readAll();
+        qApp->setStyleSheet(stylesheet);
+        file.close();
+
+    }
+    else
+    {
+        qDebug()<<"Open  file fail "<<endl;
+    }
 }
 
 void DialogWindow::chatRobot(QString msg) {
@@ -132,6 +154,25 @@ void DialogWindow::hideEvent(QHideEvent *event)
 }
 
 DialogWindow::~DialogWindow() {
-    // delete ui;
+    delete ui;
 }
+
+bool DialogWindow::eventFilter(QObject *target, QEvent *event) {
+    if(target == ui->textEdit)		//可替换
+    {
+        if(event->type() == QEvent::KeyPress)//回车键
+        {
+            QKeyEvent *k = static_cast<QKeyEvent *>(event);
+
+            if(k->key() == Qt::Key_Return || k->key() == Qt::Key_Enter)
+            {
+                buttonSendClicked();		//替换为需要响应的函数事件，以这里的按钮为例
+                return true;
+            }
+        }
+    }
+    return QWidget::eventFilter(target,event);
+}
+
+
 

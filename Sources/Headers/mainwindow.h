@@ -9,6 +9,7 @@
 #include <QMenu>
 #include <QSystemTrayIcon>
 #include "dialogwindow.h"
+#include "catwindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,8 +19,6 @@ class MainWindow : public QWidget {
 Q_OBJECT
 
 public:
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
@@ -30,17 +29,23 @@ private:
     QPoint mousePos;
     QPoint dPos;
     QSystemTrayIcon *trayIcon;
-    QAction* showAction, *quitAction, *dialogAction;
+    QAction* showAction, *quitAction, *dialogAction, *kindergartenAction;
     QMenu* trayMenu;
     QMovie *movie;
     DialogWindow* dialogWindow;
+    QTimer* actionTimer;
+    CatWindow* catWindow;
+
+protected:
+    void closeEvent(QCloseEvent *event);
+    void hideEvent(QHideEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 
 private slots:
     void _SlotPlayArgsMenu(const QPoint pos);
-    void closeEvent(QCloseEvent *event);
-    void hideEvent(QHideEvent *event);
     void iconActivated(QSystemTrayIcon::ActivationReason ireason);
-    void mouseReleaseEvent(QMouseEvent *event);
 };
 
 

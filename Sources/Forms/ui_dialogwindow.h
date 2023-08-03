@@ -64,19 +64,26 @@ public:
 
         buttonSend = new QPushButton(widget);
         buttonSend->setObjectName(QString::fromUtf8("buttonSend"));
+        buttonSend->setMinimumSize(QSize(80, 30));
+        QFont font;
+        font.setFamily(QString::fromUtf8("Microsoft Himalaya"));
+        font.setPointSize(16);
+        buttonSend->setFont(font);
 
         horizontalLayout->addWidget(buttonSend);
 
         buttonClear = new QPushButton(widget);
         buttonClear->setObjectName(QString::fromUtf8("buttonClear"));
+        buttonClear->setMinimumSize(QSize(80, 30));
+        buttonClear->setFont(font);
 
         horizontalLayout->addWidget(buttonClear);
 
 
         gridLayout->addWidget(widget, 2, 0, 1, 1);
 
-        gridLayout->setRowStretch(0, 4);
-        gridLayout->setRowStretch(1, 1);
+        gridLayout->setRowStretch(0, 8);
+        gridLayout->setRowStretch(1, 2);
         gridLayout->setRowStretch(2, 1);
 
         retranslateUi(DialogWindow);

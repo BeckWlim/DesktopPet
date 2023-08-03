@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" rowstretch="4,1,1">
+  <layout class="QGridLayout" name="gridLayout" rowstretch="8,2,1">
    <item row="0" column="0">
     <widget class="QListWidget" name="listWidget"/>
    </item>
@@ -38,6 +38,18 @@
       </item>
       <item>
        <widget class="QPushButton" name="buttonSend">
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Microsoft YaHei</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>send</string>
         </property>
@@ -45,6 +57,18 @@
       </item>
       <item>
        <widget class="QPushButton" name="buttonClear">
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Microsoft YaHei</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>clear</string>
         </property>

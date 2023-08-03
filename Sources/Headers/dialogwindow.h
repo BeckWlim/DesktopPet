@@ -25,7 +25,7 @@ public:
     ~DialogWindow() override;
 protected:
     void closeEvent(QCloseEvent *event);
-
+    bool eventFilter(QObject *target, QEvent *event);
     void hideEvent(QHideEvent *event);
 private:
     Ui::DialogWindow *ui;
@@ -37,7 +37,7 @@ private:
     void dealMessageTime(QString curMsgTime);
     void chatRobot(QString msg);
     void resizeEvent(QResizeEvent *event);
-
+    void setStyle(QString str);
     signals:
     void robotReply(QString msg);
 

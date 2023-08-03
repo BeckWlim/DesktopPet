@@ -12,6 +12,7 @@
 #include <QBitmap>
 #include <QPainter>
 #include <QMovie>
+#include <QTimer>
 
 using namespace std;
 
@@ -19,12 +20,13 @@ using namespace std;
 MainWindow::MainWindow(QWidget *parent) :
         QWidget(parent), ui(new Ui::MainWindow) {
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
-    this->setContextMenuPolicy(Qt::CustomContextMenu);
+    this->setContextMenuPolicy(Qt::CustomContextMenu); // 设置菜单策略
     connect(this, &MainWindow::customContextMenuRequested, this, &MainWindow::_SlotPlayArgsMenu);
     // setWindowOpacity(0.7); //设置窗体透明度
     setWindowIcon(QIcon(":/image/icon.png"));
     ui->setupUi(this);
     dialogWindow = new DialogWindow();
+    catWindow = new CatWindow();
     // dialogWindow->show();
     //创建托盘
     QIcon icon = QIcon(":/image/icon.png");
@@ -32,38 +34,45 @@ MainWindow::MainWindow(QWidget *parent) :
     trayIcon->setIcon(icon);
     trayIcon->setToolTip("for lim"); //提示文字
     trayIcon->show();
-    showAction = new QAction("show", this);
+    showAction = new QAction("温蒂", this);
     connect(showAction, &QAction::triggered, this, &MainWindow::show);
-    quitAction = new QAction("exit", this);
+    quitAction = new QAction("退出", this);
     connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
-    dialogAction = new QAction("dialog", this);
+    dialogAction = new QAction("对话", this);
     connect(dialogAction, &QAction::triggered, dialogWindow, &DialogWindow::show);
+    kindergartenAction = new QAction("浣猫乐园", this);
+    connect(kindergartenAction, &QAction::triggered, catWindow, &CatWindow::show);
     //创建托盘菜单
     trayMenu = new QMenu(this);
     trayMenu->addAction(showAction);
     trayMenu->addSeparator();
-    trayMenu->addAction(quitAction);
+    trayMenu->addAction(kindergartenAction);
     trayMenu->addSeparator();
     trayMenu->addAction(dialogAction);
+    trayMenu->addSeparator();
+    trayMenu->addAction(quitAction);
     trayIcon->setContextMenu(trayMenu);
     connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
-    /*
-    QPixmap mask(":/image/petMain.png");
-    setMask(QBitmap(mask.mask()));
-    QPalette p;
-    p.setBrush(QPalette::Window,QBrush(mask));
-    setPalette(p);
-    */
     this->setAttribute(Qt::WA_TranslucentBackground);//设置窗体全透明
-    movie = new QMovie(":/image/wendyIdol.png");
-    movie->setSpeed(300);
+    movie = new QMovie(":/image/wendy_idle.gif");
+    movie->setSpeed(400);
     ui->label->setMovie(movie);
     movie->start();
     connect(movie, &QMovie::frameChanged, [=](int frameNumber){
         if(frameNumber == movie->frameCount()-1){
-            movie->setFileName(QString(":/image/wendyIdol.png"));
+            movie->setFileName(QString(":/image/wendy_idle.gif"));
         }
     });
+    actionTimer = new QTimer();
+    actionTimer->setInterval(15000);
+    actionTimer->setSingleShot(false);
+    connect(actionTimer, &QTimer::timeout, this, [=](){
+       movie->stop();
+            // movie->setFileName(QString(":/image/wendy_dance.gif"));
+       movie->start();
+    });
+    actionTimer->start();
+    catWindow->show();
 }
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason ireason)
@@ -100,7 +109,12 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
     movie->stop();
-    this->movie->setFileName(QString(":/image/wendy.gif"));
+    if(event->button() & Qt::LeftButton){
+        this->movie->setFileName(QString(":/image/wendy_channel.gif"));
+    }
+    if(event->button() & Qt::RightButton){
+        this->movie->setFileName(QString(":/image/wendy_channel_pst.gif"));
+    }
     this->movie->start();
 }
 
@@ -109,19 +123,19 @@ void MainWindow::_SlotPlayArgsMenu(const QPoint pos) {
     QMenu *pMenu = new QMenu(this);
 
     //隐藏
-    QAction *pTest1 = new QAction("hide", this);
+    QAction *pTest1 = new QAction("隐藏", this);
     connect(pTest1, &QAction::triggered, this, &MainWindow::hide);
     //添加一个图标
-    QAction *pTest2 = new QAction("settings", this);
-    QAction *pTest3 = new QAction("dialog", this);
+    QAction *pTest2 = new QAction("设置", this);
+    QAction *pTest3 = new QAction("对话", this);
 
     //把QAction对象添加到菜单上
     pMenu->addAction(pTest1);
     pMenu->addSeparator();
-    pMenu->addAction(pTest2);
+    pMenu->addAction(pTest3);
     //添加分隔线
     pMenu->addSeparator();
-    pMenu->addAction(pTest3);
+    pMenu->addAction(pTest2);
     connect(pTest3, &QAction::triggered, dialogWindow, &DialogWindow::show);
     //在鼠标右键点击的地方显示菜单
     pMenu->exec(cursor().pos());

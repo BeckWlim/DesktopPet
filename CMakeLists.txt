@@ -30,13 +30,17 @@ if(CMAKE_BUILD_TYPE MATCHES "Release")
             Sources/main.cpp
             Sources/mainwindow.cpp Sources/Headers/mainwindow.h
             Sources/dialogwindow.cpp Sources/Headers/dialogwindow.h
-            Sources/QNChatMessage.cpp Sources/Headers/QNChatMessage.h)
+            Sources/QNChatMessage.cpp Sources/Headers/QNChatMessage.h
+            Sources/catwindow.cpp Sources/Headers/catwindow.h
+            Sources/kitcoonwindow.cpp Sources/Headers/kitcoonwindow.h Sources/TaskCat.cpp Sources/Headers/TaskCat.h)
 else()
     add_executable(demo ${QRC_SOURCE_FILE}
             Sources/main.cpp
             Sources/mainwindow.cpp Sources/Headers/mainwindow.h
             Sources/dialogwindow.cpp Sources/Headers/dialogwindow.h
-            Sources/QNChatMessage.cpp Sources/Headers/QNChatMessage.h)
+            Sources/QNChatMessage.cpp Sources/Headers/QNChatMessage.h
+            Sources/catwindow.cpp Sources/Headers/catwindow.h
+            Sources/kitcoonwindow.cpp Sources/Headers/kitcoonwindow.h Sources/TaskCat.cpp Sources/Headers/TaskCat.h)
 endif()
 
 target_link_libraries(demo
@@ -66,7 +70,7 @@ if (WIN32)
                 "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
     endif ()
-    foreach (QT_LIB Core Gui Widgets)
+    foreach (QT_LIB Core Gui Widgets Network)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
                 "${QT_INSTALL_PATH}/bin/Qt5${QT_LIB}${DEBUG_SUFFIX}.dll"

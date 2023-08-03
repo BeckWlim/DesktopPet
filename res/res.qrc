@@ -1,8 +1,29 @@
 <RCC>
     <qresource prefix="/image">
         <file>icon.png</file>
-        <file>wendyIdol.png</file>
-        <file>wendy.gif</file>
+        <file>wendy_idle.gif</file>
+        <file>wendy_channel.gif</file>
+        <file>wendy_inaction.gif</file>
+        <file>wendy_channel_pst.gif</file>
+        <file>wendy_dance.gif</file>
+        <file>cat_distress.gif</file>
+        <file>cat_eat.gif</file>
+        <file>cat_eat_pre.gif</file>
+        <file>cat_eat_pst.gif</file>
+        <file>cat_idle.gif</file>
+        <file>cat_left.gif</file>
+        <file>cat_right.gif</file>
+        <file>cat_up.gif</file>
+        <file>cat_down.gif</file>
+        <file>kitcoonden.gif</file>
+        <file>kitcoonden.png</file>
+        <file>cat_sleep.gif</file>
+        <file>cat_sleep_pre.gif</file>
+        <file>cat_sleep_pst.gif</file>
+        <file>cat_jump.gif</file>
+        <file>cat_hidding.gif</file>
     </qresource>
-
+    <qresource prefix="/qss">
+        <file>lim.qss</file>
+    </qresource>
 </RCC>
