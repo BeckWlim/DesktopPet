@@ -15,8 +15,8 @@ public:
     QString pre;
     QString pst;
     QPoint pos;
-private:
-
+    int intervalTime;
+    void setInterval(int interval);
 };
 
 

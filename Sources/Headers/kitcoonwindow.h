@@ -45,18 +45,19 @@ private:
     QPropertyAnimation* animation;
     QString direction;
     vector<TaskCat*> taskStack;
-    QTimer* moveTimer, *eventTimer;
+    QTimer* moveTimer, *eventTimer, *clickTimer;
+    int clickCounter;
 signals:
     void addTask();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
-    void mouseDoubleClickEvent(QMouseEvent *event);
 
 private slots:
     void taskFinish();
     void createTaskThread();
+    void slotClickTime();
 };
 
 

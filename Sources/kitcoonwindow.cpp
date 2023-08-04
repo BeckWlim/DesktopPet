@@ -31,21 +31,44 @@ KitcoonWindow::KitcoonWindow(QWidget *parent) :
     animation = new QPropertyAnimation(this, "pos");
     moveTimer = new QTimer();
     eventTimer = new QTimer();
-    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+    clickTimer = new QTimer();
+    connect(clickTimer, &QTimer::timeout, this, &KitcoonWindow::slotClickTime);
+    qsrand(QTime(0,0,0).secsTo(QTime::currentTime())); //设置随机数种子
     connect(moveTimer, &QTimer::timeout, this, [=](){
         int interval = (qrand() % 10 + 5)* 1000;
+        int event = (qrand() % 12);
         moveTimer->setInterval(interval);
-        QRect screenRect = QApplication::desktop()->screenGeometry();
+        // QRect screenRect = QApplication::desktop()->screenGeometry();
         int w = 1462;
         int h = 822;
-        cout << w << h << endl;
         int threshold = 200;
         int a = (qrand() % (h - threshold));
         int b = (qrand() % (w - threshold));
-        // cout << "a" << a << "b"<< b <<"interval"<< interval << endl;
         TaskCat* task = new TaskCat("move");
         task->pos = QPoint(a, b);
         taskDeal(task);
+        TaskCat* wait = new TaskCat("idle");
+        wait->setInterval(1000);
+        taskDeal(wait);
+        if(event < 8){
+            animation->stop();
+            // cout << "jump" << endl;
+            TaskCat* jump = new TaskCat("idle");
+            jump->setInterval(4000);
+            taskDeal(jump);
+        }
+        else if(event < 10){
+            animation->stop();
+            TaskCat* forEat = new TaskCat("distress");
+            forEat->setInterval(4000);
+            taskDeal(forEat);
+        }
+        else{
+            animation->stop();
+            TaskCat* hide = new TaskCat("hidding");
+            hide->setInterval(4000);
+            taskDeal(hide);
+        }
     });
 }
 
@@ -62,7 +85,7 @@ void KitcoonWindow::taskDeal(TaskCat* task) {
     // cout << temp->task.toStdString() << endl;
     this->taskStack.push_back(task); // 载入需要执行的任务
 
-    if(temp->pst != QString::null){ // 任务中断动画非空 载入中断动画
+    if(temp->pst != QString::null && temp->pst != task->task){ // 任务中断动画非空 载入中断动画
         this->taskStack.push_back(new TaskCat(temp->pst));
     }
     createTaskThread(); // 执行任务线程
@@ -118,16 +141,29 @@ void KitcoonWindow::createTaskThread() {
         connect(animation, &QPropertyAnimation::finished, this, &KitcoonWindow::taskFinish,Qt::UniqueConnection);
         cat->disconnect(this);
     }
-    else{
+    else if(task->intervalTime == -1){
         cat->stop();
         QString fileName = QString(":/image/cat_")+task->task+QString(".gif");
         cat->setFileName(fileName);
         cat->start();  // 载入任务动画
+        cat->disconnect(this);
         connect(cat, &QMovie::frameChanged, this, [=](int frameNumber){
             if(frameNumber == cat->frameCount()-1){
                 taskFinish();
             }
         }); // 动画播放完毕后进行任务终止操作
+    }
+    else{
+        cat->stop();
+        cat->disconnect(this);
+        QString fileName = QString(":/image/cat_")+task->task+QString(".gif");
+        cat->setFileName(fileName);
+        cat->start();  // 载入任务动画
+        eventTimer->disconnect(this);
+        eventTimer->setInterval(task->intervalTime);
+        eventTimer->setSingleShot(true);
+        connect(eventTimer, &QTimer::timeout, this, &KitcoonWindow::taskFinish);
+        eventTimer->start();
     }
 }
 
@@ -135,9 +171,9 @@ void KitcoonWindow::modeSwitcher(CatMode mode) {
     if(mode == play){
         taskStack.erase(taskStack.begin(), taskStack.end());
         TaskCat* idle = new TaskCat(QString("idle"));
-        TaskCat* jump = new TaskCat(QString("jump"));
+        TaskCat* sleep_pst = new TaskCat(QString("sleep_pst"));
         taskStack.push_back(idle);
-        taskStack.push_back(jump);
+        taskStack.push_back(sleep_pst);
         if(animation != nullptr){
             animation->stop();
         }
@@ -168,7 +204,14 @@ void KitcoonWindow::mousePressEvent(QMouseEvent *event)
     this->windowPos = this->pos();       // 获得部件当前位置
     this->mousePos = event->globalPos(); // 获得鼠标位置
     this->dPos = mousePos - windowPos;   // 移动后部件所在的位置
-
+    if (event->button() & Qt::LeftButton) {
+        if (!clickTimer->isActive()) {
+            clickTimer->start(300);
+            clickCounter++;
+        } else {
+            clickCounter++;
+        }
+    }
     return QWidget::mousePressEvent(event);
 }
 
@@ -182,12 +225,34 @@ KitcoonWindow::~KitcoonWindow() {
     delete ui;
 }
 
-void KitcoonWindow::mouseDoubleClickEvent(QMouseEvent *event) {
-    if(mode == sleep){
-        mode = play;
+void KitcoonWindow::slotClickTime() {
+    clickTimer->stop();
+    if(clickCounter == 1){
+        if(this->mode == sleep){
+            TaskCat* task = new TaskCat("sleep_pst");
+            taskDeal(task);
+        }
+        else if(this->mode == play){
+            if(this->taskStack.back()->task == "distress"){
+                this->taskStack.pop_back();
+                eventTimer->disconnect(this);
+                this->taskStack.push_back(new TaskCat("eat_pst"));
+                TaskCat* eat = new TaskCat("eat");
+                eat->setInterval(2000);
+                this->taskStack.push_back(eat);
+                this->taskStack.push_back(new TaskCat("eat_pre"));
+                this->createTaskThread();
+            }
+        }
     }
-    else if(mode == play){
-        mode = sleep;
+    else if(clickCounter == 2){
+        if(mode == sleep){
+            mode = play;
+        }
+        else if(mode == play){
+            mode = sleep;
+        }
+        modeSwitcher(mode);
     }
-    modeSwitcher(mode);
+    clickCounter = 0;
 }
