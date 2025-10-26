@@ -21,7 +21,7 @@ DialogWindow::DialogWindow(QWidget *parent) :
         QWidget(parent), ui(new Ui::DialogWindow)
 {
     ui->setupUi(this);
-    setWindowIcon(QIcon(":/image/icon.png"));
+    setWindowIcon(QIcon(":/image/wendy.ico"));
     this->resize(600, 800);
     connect(ui->buttonSend, &QPushButton::clicked, this, &DialogWindow::buttonSendClicked);
     robotAPIManager = new QNetworkAccessManager();

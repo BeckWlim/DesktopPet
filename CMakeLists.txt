@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.27)
-project(demo)
+project(DesktopPet)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_AUTOMOC ON)
@@ -9,8 +9,6 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_PREFIX_PATH "C:/ToolKit/QT/5.12.12/mingw73_64")
 
 set(QRC_SOURCE_FILE res/res.qrc)
-set(PUBLISH_BIN_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/Release)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PUBLISH_BIN_RELEASE})
 
 find_package(Qt5 COMPONENTS
         Core
@@ -26,7 +24,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/lib
 )
 if(CMAKE_BUILD_TYPE MATCHES "Release")
-    add_executable(demo WIN32 ${QRC_SOURCE_FILE}
+    add_executable(DesktopPet WIN32 ${QRC_SOURCE_FILE} res/app_win32.rc
             Sources/main.cpp
             Sources/mainwindow.cpp Sources/Headers/mainwindow.h
             Sources/dialogwindow.cpp Sources/Headers/dialogwindow.h
@@ -34,7 +32,7 @@ if(CMAKE_BUILD_TYPE MATCHES "Release")
             Sources/catwindow.cpp Sources/Headers/catwindow.h
             Sources/kitcoonwindow.cpp Sources/Headers/kitcoonwindow.h Sources/TaskCat.cpp Sources/Headers/TaskCat.h)
 else()
-    add_executable(demo ${QRC_SOURCE_FILE}
+    add_executable(DesktopPet ${QRC_SOURCE_FILE} res/app_win32.rc
             Sources/main.cpp
             Sources/mainwindow.cpp Sources/Headers/mainwindow.h
             Sources/dialogwindow.cpp Sources/Headers/dialogwindow.h
@@ -43,7 +41,7 @@ else()
             Sources/kitcoonwindow.cpp Sources/Headers/kitcoonwindow.h Sources/TaskCat.cpp Sources/Headers/TaskCat.h)
 endif()
 
-target_link_libraries(demo
+target_link_libraries(DesktopPet
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets

@@ -22,6 +22,8 @@
         <file>cat_sleep_pst.gif</file>
         <file>cat_jump.gif</file>
         <file>cat_hidding.gif</file>
+        <file>cat.ico</file>
+        <file>wendy.ico</file>
     </qresource>
     <qresource prefix="/qss">
         <file>lim.qss</file>

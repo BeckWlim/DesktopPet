@@ -22,13 +22,13 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
     this->setContextMenuPolicy(Qt::CustomContextMenu); // 设置菜单策略
     connect(this, &MainWindow::customContextMenuRequested, this, &MainWindow::_SlotPlayArgsMenu);
-    setWindowIcon(QIcon(":/image/icon.png"));
+    setWindowIcon(QIcon(":/image/cat.ico"));
     ui->setupUi(this);
     dialogWindow = new DialogWindow();
     catWindow = new CatWindow();
     // dialogWindow->show();
     //创建托盘
-    QIcon icon = QIcon(":/image/icon.png");
+    QIcon icon = QIcon(":/image/cat.ico");
     trayIcon = new QSystemTrayIcon(this);
     trayIcon->setIcon(icon);
     trayIcon->setToolTip("for lim"); //提示文字
