@@ -21,6 +21,7 @@ Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
+    void startShow();
 
 private:
     Ui::MainWindow *ui;
@@ -35,16 +36,13 @@ private:
     DialogWindow* dialogWindow;
     QTimer* actionTimer;
     CatWindow* catWindow;
+    void initWindow();
 
 protected:
     void closeEvent(QCloseEvent *event);
     void hideEvent(QHideEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
 
 private slots:
-    void _SlotPlayArgsMenu(const QPoint pos);
     void iconActivated(QSystemTrayIcon::ActivationReason ireason);
 };
 

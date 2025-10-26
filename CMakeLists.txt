@@ -11,41 +11,36 @@ set(CMAKE_PREFIX_PATH "C:/ToolKit/QT/5.12.12/mingw73_64")
 set(QRC_SOURCE_FILE res/res.qrc)
 
 find_package(Qt5 COMPONENTS
-        Core
-        Gui
-        Widgets
-        Network
-        REQUIRED
-        )
+    Core
+    Gui
+    Widgets
+    Network
+    Sql
+    REQUIRED
+)
 
 include_directories(
-        ${PROJECT_SOURCE_DIR}/include
-        ${PROJECT_SOURCE_DIR}/Sources/Headers
-        ${PROJECT_SOURCE_DIR}/lib
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/Sources/Headers
+    ${PROJECT_SOURCE_DIR}/lib
 )
-if(CMAKE_BUILD_TYPE MATCHES "Release")
-    add_executable(DesktopPet WIN32 ${QRC_SOURCE_FILE} res/app_win32.rc
-            Sources/main.cpp
-            Sources/mainwindow.cpp Sources/Headers/mainwindow.h
-            Sources/dialogwindow.cpp Sources/Headers/dialogwindow.h
-            Sources/QNChatMessage.cpp Sources/Headers/QNChatMessage.h
-            Sources/catwindow.cpp Sources/Headers/catwindow.h
-            Sources/kitcoonwindow.cpp Sources/Headers/kitcoonwindow.h Sources/TaskCat.cpp Sources/Headers/TaskCat.h)
-else()
-    add_executable(DesktopPet ${QRC_SOURCE_FILE} res/app_win32.rc
-            Sources/main.cpp
-            Sources/mainwindow.cpp Sources/Headers/mainwindow.h
-            Sources/dialogwindow.cpp Sources/Headers/dialogwindow.h
-            Sources/QNChatMessage.cpp Sources/Headers/QNChatMessage.h
-            Sources/catwindow.cpp Sources/Headers/catwindow.h
-            Sources/kitcoonwindow.cpp Sources/Headers/kitcoonwindow.h Sources/TaskCat.cpp Sources/Headers/TaskCat.h)
-endif()
+
+file(GLOB_RECURSE SRC_FILES
+    Sources/*.cpp
+    Sources/Headers/*.h
+    ${QRC_SOURCE_FILE}
+    res/app_win32.rc
+)
+
+add_executable(DesktopPet WIN32 ${SRC_FILES})
 
 target_link_libraries(DesktopPet
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
-        Qt5::Network)
+    Qt5::Core
+    Qt5::Gui
+    Qt5::Widgets
+    Qt5::Network
+    Qt5::Sql
+)
 
 if (WIN32)
     set(DEBUG_SUFFIX)
