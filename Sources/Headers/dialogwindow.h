@@ -8,6 +8,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QListWidgetItem>
+#include <QWebSocket>
 #include "QNChatMessage.h"
 #include <QtNetwork/QNetworkAccessManager>
 
@@ -21,7 +22,7 @@ Q_OBJECT
 
 public:
     explicit DialogWindow(QWidget *parent = nullptr);
-
+    void createWebSocket();
     ~DialogWindow() override;
 protected:
     void closeEvent(QCloseEvent *event);
@@ -30,14 +31,18 @@ protected:
 private:
     Ui::DialogWindow *ui;
     QNetworkAccessManager* robotAPIManager;
+    QWebSocket* websocket;
+    QString sessionId;
+
     void buttonSendClicked();
     void dealMessage(QNChatMessage *messageW, QListWidgetItem *item, QString text, QString time,
                 QNChatMessage::User_Type type);
-    void dealRobotMessage(QNetworkReply *reply);
+    void dealRobotMessage(const QString& msg);
     void dealMessageTime(QString curMsgTime);
     void chatRobot(QString msg);
     void resizeEvent(QResizeEvent *event);
     void setStyle(QString str);
+
     signals:
     void robotReply(QString msg);
 

@@ -13,9 +13,13 @@
 #include <QLabel>
 #include <QDebug>
 #include <QJsonParseError>
-#include "QNChatMessage.h"
 #include <QtNetwork/QNetworkReply>
 #include <QKeyEvent>
+#include <QWebSocket>
+#include <QUrlQuery>
+
+#include "QNChatMessage.h"
+#include "AuthManager.h"
 
 DialogWindow::DialogWindow(QWidget *parent) :
         QWidget(parent), ui(new Ui::DialogWindow)
@@ -25,13 +29,47 @@ DialogWindow::DialogWindow(QWidget *parent) :
     this->resize(600, 800);
     connect(ui->buttonSend, &QPushButton::clicked, this, &DialogWindow::buttonSendClicked);
     robotAPIManager = new QNetworkAccessManager();
-    connect(robotAPIManager, &QNetworkAccessManager::finished, this, &DialogWindow::dealRobotMessage);
+
     connect(this, &DialogWindow::robotReply, this, &DialogWindow::displayReply);
     ui->buttonSend->setFocus();
     ui->buttonSend->setDefault(true);
     ui->textEdit->installEventFilter(this);
     QFont font = QFont("Microsoft YaHei",12,2);
     ui->textEdit->setFont(font);
+}
+
+void DialogWindow::createWebSocket(){
+    websocket = new QWebSocket();
+    connect(websocket, &QWebSocket::connected, this, [=](){
+        qDebug() << "[WebSocket] connected successfully";
+    });
+    connect(websocket, &QWebSocket::disconnected, this, [=](){
+        qDebug() << "[WebSocket Disconnected]";
+    });
+    connect(websocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), this, [=](QAbstractSocket::SocketError error){
+        qDebug() << "[WebSocket] Connection error:" << websocket->errorString();
+    });
+
+    connect(websocket, &QWebSocket::textMessageReceived, this, &DialogWindow::dealRobotMessage);
+
+    QUrl url("ws://114.214.236.207:8081/ws/chat");
+    QUrlQuery query;
+    query.addQueryItem("username", AuthManager::instance().getUsername());
+    url.setQuery(query);
+
+    QNetworkRequest request(url);
+    QString token = AuthManager::instance().getToken();
+    if (!token.isEmpty()) {
+        request.setRawHeader("Authorization", "Bearer " + token.toUtf8());
+        qDebug() << "Websocket request";
+    }
+
+    qDebug() << "[WebSocket] Final URL:" << request.url().toString();
+    for (const QByteArray &headerName : request.rawHeaderList()) {
+        qDebug() << "[WebSocket] Header:" << headerName << "=" << request.rawHeader(headerName);
+    }
+
+    websocket->open(request);
 }
 
 void DialogWindow::setStyle(QString str) {
@@ -50,10 +88,12 @@ void DialogWindow::setStyle(QString str) {
     }
 }
 
-void DialogWindow::chatRobot(QString msg) {
-    QNetworkRequest request;
-    request.setUrl(QUrl(QString("http://api.qingyunke.com/api.php?key=free&appid=0&msg=")+msg));
-    robotAPIManager->get(request);
+void DialogWindow::chatRobot(const QString msg) {
+    if (!websocket || websocket->state() != QAbstractSocket::ConnectedState) {
+        qWarning() << "WebSocket not connected!";
+        return;
+    }
+    websocket->sendTextMessage(msg);
 }
 
 void DialogWindow::buttonSendClicked() {
@@ -78,18 +118,21 @@ void DialogWindow::dealMessage(QNChatMessage *messageW, QListWidgetItem *item, Q
     ui->listWidget->setItemWidget(item, messageW);
 }
 
-void DialogWindow::dealRobotMessage(QNetworkReply *reply) {
-    QByteArray array = reply->readAll();
-    QJsonParseError error;
-    QJsonDocument data = QJsonDocument::fromJson(array, &error);
-    if (!data.isNull()) {
-        QJsonObject obj = data.object();
-        if (obj.contains("content")) {
-            QJsonValue val = obj.value("content");
+void DialogWindow::dealRobotMessage(const QString& msg) {
+    QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8());
+    qDebug() << msg;
+    if (!doc.isObject()) return;
+    auto obj = doc.object();
+
+    if (obj["type"].toString() == "session_init") {
+        sessionId = obj["sessionId"].toString();
+        qDebug() << "Session established with ID:" << sessionId;
+    }else{
+        if (obj.contains("answer")) {
+            QJsonValue val = obj.value("answer");
             QString msg = val.toString();
             emit robotReply(msg);
         }
-        reply->deleteLater();
     }
 }
 
@@ -136,7 +179,6 @@ void DialogWindow::resizeEvent(QResizeEvent *event)
         dealMessage(messageW, item, messageW->text(), messageW->time(), messageW->userType());
     }
 }
-
 
 void DialogWindow::closeEvent(QCloseEvent *event)
 {

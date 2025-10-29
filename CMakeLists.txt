@@ -6,7 +6,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(CMAKE_PREFIX_PATH "C:/ToolKit/QT/5.12.12/mingw73_64")
+set(CMAKE_PREFIX_PATH "D:/tool/qt/5.12.7/mingw73_64")
 
 set(QRC_SOURCE_FILE res/res.qrc)
 
@@ -16,6 +16,7 @@ find_package(Qt5 COMPONENTS
     Widgets
     Network
     Sql
+    WebSockets
     REQUIRED
 )
 
@@ -40,6 +41,7 @@ target_link_libraries(DesktopPet
     Qt5::Widgets
     Qt5::Network
     Qt5::Sql
+    Qt5::WebSockets
 )
 
 if (WIN32)

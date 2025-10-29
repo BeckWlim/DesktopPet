@@ -8,6 +8,13 @@
 #include <QDebug>
 #include <QFile>
 #include <QDialog>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QJsonObject>
+#include <QUrl>
+#include <QJsonDocument>
+
+#include "AuthManager.h"
 
 LoginWindow::LoginWindow(QDialog *parent)
     : QDialog(parent)
@@ -50,10 +57,12 @@ void LoginWindow::initDatabase()
         }
 
         QSqlQuery query(db);
-        query.exec("CREATE TABLE IF NOT EXISTS user("
-                   "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                   "username TEXT UNIQUE, "
-                   "password TEXT)");
+        query.exec(
+            "CREATE TABLE IF NOT EXISTS user("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "username TEXT UNIQUE, "
+            "password TEXT)"
+        );
     }
 }
 
@@ -82,26 +91,46 @@ void LoginWindow::onSubmit()
         return;
     }
 
-    QSqlDatabase db = QSqlDatabase::database("login_db");
-    QSqlQuery query(db);
+    QJsonObject json;
+    json.insert("username", username);
+    json.insert("password", password);
+    QJsonDocument doc(json);
+    QByteArray data = doc.toJson();
 
-    // 检查账号密码是否存在
+    QNetworkRequest request(QUrl("http://114.214.236.207:8081/api/auth/login"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-    if (true) {
-        QMessageBox::information(this, "Success", "Login successful!");
+    QNetworkAccessManager* manager = new QNetworkAccessManager(this);
+    QNetworkReply* reply = manager->post(request, data);
 
-        // 若勾选保存，则写入数据库（若不存在则插入）
-        if (ui->radio_save->isChecked()) {
-            QSqlQuery insertQuery(db);
-            insertQuery.prepare("INSERT OR REPLACE INTO user (username, password) VALUES (:username, :password)");
-            insertQuery.bindValue(":username", username);
-            insertQuery.bindValue(":password", password);
-            insertQuery.exec();
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            QMessageBox::critical(this, "Error", reply->errorString());
+            reply->deleteLater();
+            manager->deleteLater();
+            return;
         }
-        accept();
-    } else {
-        QMessageBox::critical(this, "Error", "Invalid username or password!");
-    }
+
+        QByteArray response = reply->readAll();
+        qDebug() << "Response:" << response;
+
+        QJsonDocument respDoc = QJsonDocument::fromJson(response);
+        QJsonObject resp = respDoc.object();
+
+        if (resp.contains("accessToken")) {
+            QString token = resp["accessToken"].toString();
+            AuthManager::instance().setToken(token);
+            AuthManager::instance().setUsername(username);
+
+            QMessageBox::information(this, "Success", "Login successful!");
+            accept();
+        } else {
+            QMessageBox::critical(this, "Error", "Invalid username or password!");
+        }
+
+        reply->deleteLater();
+        manager->deleteLater();
+    });
 }
 
 /**

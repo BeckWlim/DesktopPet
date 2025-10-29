@@ -60,6 +60,7 @@ void MainWindow::initWindow(){
 void MainWindow::startShow(){
     trayIcon->show();
     catWindow->show();
+    dialogWindow->createWebSocket();
 }
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason ireason)
